@@ -2,13 +2,13 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>JKT48 Replay Theater</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:#0b0b0b;
   color:#fff
 }
@@ -19,22 +19,8 @@ header{
   border-bottom:2px solid #c00000
 }
 header img{height:42px}
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:15px
-}
-.status{text-align:center;margin-bottom:15px}
-.badge{
-  padding:6px 14px;
-  border-radius:6px;
-  background:#444;
-  font-weight:bold
-}
-.theater{
-  display:flex;
-  gap:15px
-}
+.container{max-width:1200px;margin:auto;padding:15px}
+.theater{display:flex;gap:15px}
 
 /* VIDEO */
 .video-wrapper{
@@ -42,45 +28,30 @@ header img{height:42px}
   aspect-ratio:16/9;
   background:#000;
   border-radius:10px;
-  overflow:hidden;
-  position:relative
+  overflow:hidden
 }
 #player{width:100%;height:100%}
-.overlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:rgba(0,0,0,.35);
-  cursor:pointer
-}
-.overlay.hidden{background:transparent}
-.play-btn{
-  width:70px;
-  height:70px;
-  background:#c00000;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px
-}
 
 /* SIDEBAR */
 .sidebar{
   flex:1;
   background:#111;
   border-radius:10px;
-  overflow:hidden;
   display:flex;
   flex-direction:column
 }
-.sidebar h3{
-  margin:0;
-  padding:12px;
-  background:#c00000;
-  font-size:16px
+.tabs{
+  display:flex
+}
+.tab{
+  flex:1;
+  padding:10px;
+  text-align:center;
+  cursor:pointer;
+  background:#222
+}
+.tab.active{
+  background:#c00000
 }
 .playlist{
   flex:1;
@@ -92,164 +63,147 @@ header img{height:42px}
   cursor:pointer
 }
 .playlist-item:hover{background:#1a1a1a}
-.playlist-item.active{
-  background:#c00000
-}
 
-/* WA */
-.wa-box{
-  padding:12px;
-  text-align:center;
+/* ADMIN */
+.admin-panel{
+  display:none;
+  padding:10px;
   border-top:1px solid #222
 }
-.wa-btn{
-  display:inline-block;
-  margin-top:8px;
-  padding:10px 16px;
-  background:#25D366;
-  color:#000;
-  text-decoration:none;
-  font-weight:bold;
-  border-radius:6px
-}
-
-footer{
-  text-align:center;
-  color:#777;
-  font-size:12px;
-  margin:20px 0
+.admin-panel input,
+.admin-panel select,
+.admin-panel button{
+  width:100%;
+  margin-top:6px;
+  padding:8px
 }
 
 /* MOBILE */
 @media(max-width:768px){
   .theater{flex-direction:column}
-  .sidebar{order:2}
-  .video-wrapper{border-radius:0}
 }
 </style>
 </head>
 
 <body>
-
 <header>
   <img src="logo.png">
   <h2>JKT48 Replay Theater</h2>
 </header>
 
 <div class="container">
-
-  <div class="status">
-    <span class="badge">REPLAY</span>
-    <p>Arsip Pertunjukan Theater</p>
-  </div>
-
   <div class="theater">
 
     <div class="video-wrapper">
       <div id="player"></div>
-      <div class="overlay" id="overlay">
-        <div class="play-btn" id="playIcon">▶</div>
-      </div>
     </div>
 
     <div class="sidebar">
-      <h3>Playlist Replay</h3>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('normal')">Replay</div>
+        <div class="tab" onclick="switchTab('birthday')">Ultah</div>
+      </div>
+
       <div class="playlist" id="playlist"></div>
 
-      <div class="wa-box">
-        <p>Update Replay</p>
-        <a class="wa-btn" target="_blank"
-           href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">
-           Follow WhatsApp Channel
-        </a>
+      <div class="admin-panel" id="adminPanel">
+        <select id="category">
+          <option value="normal">Replay</option>
+          <option value="birthday">Ultah</option>
+        </select>
+        <input id="titleInput" placeholder="Judul Replay">
+        <input id="videoInput" placeholder="YouTube Video ID">
+        <button onclick="addPlaylist()">Tambah</button>
       </div>
+
     </div>
 
   </div>
 </div>
 
-<footer>© 2025 ReplayShow JKT48</footer>
-
 <script src="https://www.youtube.com/iframe_api"></script>
-<script>
-/* ======================
-   PLAYLIST REPLAY
-   ====================== */
-const PLAYLIST = [
-  {
-    section: "Live Theater Biasa",
-    videos: [
-      { title: "Aturan Anti Cinta", id: "VIDEO_ID_1" },
-      { title: "Pajama Drive", id: "VIDEO_ID_2" }
-    ]
-  },
-  {
-    section: "Birthday Live Member",
-    videos: [
-      { title: "Birthday Oniel", id: "VIDEO_ID_3" },
-      { title: "Birthday Zee", id: "VIDEO_ID_4" }
-    ]
-  }
-];
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore, collection, addDoc,
+  deleteDoc, doc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* CONFIG */
+const ADMIN_KEY="JKT48";
+const firebaseConfig={
+  apiKey:"API_KEY",
+  authDomain:"PROJECT.firebaseapp.com",
+  projectId:"PROJECT_ID"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+let MODE="normal";
 let player;
-let isPlaying = false;
 
-/* RENDER PLAYLIST */
-const list = document.getElementById("playlist");
-let firstVideo = null;
+/* ADMIN CHECK */
+if(location.hash==="#admin="+ADMIN_KEY){
+  adminPanel.style.display="block";
+}
 
-PLAYLIST.forEach(group => {
-  const header = document.createElement("div");
-  header.style.padding = "10px";
-  header.style.fontWeight = "bold";
-  header.style.background = "#151515";
-  header.textContent = group.section;
-  list.appendChild(header);
+/* PLAYER */
+window.onYouTubeIframeAPIReady=()=>{
+  player=new YT.Player("player",{playerVars:{controls:0,rel:0}});
+};
 
-  group.videos.forEach(video => {
-    if(!firstVideo) firstVideo = video.id;
+/* REALTIME LIST */
+const list=document.getElementById("playlist");
 
-    const item = document.createElement("div");
-    item.className = "playlist-item";
-    item.textContent = video.title;
-    item.onclick = () => loadVideo(video.id, item);
-    list.appendChild(item);
+onSnapshot(collection(db,"playlists"),snap=>{
+  list.innerHTML="";
+  snap.forEach(d=>{
+    const data=d.data();
+    if(data.category!==MODE) return;
+
+    const div=document.createElement("div");
+    div.className="playlist-item";
+    div.textContent=data.title;
+    div.onclick=()=>player.loadVideoById(data.videoId);
+
+    if(isAdmin()){
+      const del=document.createElement("span");
+      del.textContent=" ✕";
+      del.style.color="red";
+      del.onclick=(e)=>{
+        e.stopPropagation();
+        deleteDoc(doc(db,"playlists",d.id));
+      };
+      div.appendChild(del);
+    }
+    list.appendChild(div);
   });
 });
 
-function onYouTubeIframeAPIReady(){
-  player = new YT.Player("player",{
-    videoId: firstVideo,
-    playerVars:{controls:0,rel:0,modestbranding:1},
-    events:{onStateChange:onState}
+/* FUNCTIONS */
+function isAdmin(){
+  return location.hash==="#admin="+ADMIN_KEY;
+}
+window.switchTab=(m)=>{
+  MODE=m;
+  document.querySelectorAll(".tab")
+    .forEach(t=>t.classList.remove("active"));
+  event.target.classList.add("active");
+};
+window.addPlaylist=async()=>{
+  if(!titleInput.value||!videoInput.value) return;
+  await addDoc(collection(db,"playlists"),{
+    title:titleInput.value,
+    videoId:videoInput.value,
+    category:category.value,
+    createdAt:Date.now()
   });
-}
-
-function loadVideo(videoId, el){
-  player.loadVideoById(videoId);
-  document.querySelectorAll(".playlist-item")
-    .forEach(i=>i.classList.remove("active"));
-  el.classList.add("active");
-}
-
-function onState(e){
-  if(e.data===YT.PlayerState.PLAYING){
-    isPlaying=true;
-    overlay.classList.add("hidden");
-    playIcon.textContent="⏸";
-  }else{
-    isPlaying=false;
-    overlay.classList.remove("hidden");
-    playIcon.textContent="▶";
-  }
-}
-
-overlay.onclick=()=>{
-  if(!player) return;
-  isPlaying ? player.pauseVideo() : player.playVideo();
+  titleInput.value="";
+  videoInput.value="";
 };
 </script>
-
 </body>
 </html>
