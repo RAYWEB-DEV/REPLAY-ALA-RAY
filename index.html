@@ -2,208 +2,208 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JKT48 Replay Theater</title>
-
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0b0b0b;
-  color:#fff
-}
-header{
-  background:#111;
-  padding:12px;
-  text-align:center;
-  border-bottom:2px solid #c00000
-}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0b0b;color:#fff}
+header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000;position:relative;user-select:none}
 header img{height:42px}
 .container{max-width:1200px;margin:auto;padding:15px}
+.status{text-align:center;margin-bottom:15px}
+.badge{padding:6px 14px;border-radius:6px;background:#444;font-weight:bold}
 .theater{display:flex;gap:15px}
-
-/* VIDEO */
-.video-wrapper{
-  flex:2;
-  aspect-ratio:16/9;
-  background:#000;
-  border-radius:10px;
-  overflow:hidden
-}
+.video-wrapper{flex:2;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;position:relative}
 #player{width:100%;height:100%}
-
-/* SIDEBAR */
-.sidebar{
-  flex:1;
-  background:#111;
-  border-radius:10px;
-  display:flex;
-  flex-direction:column
-}
-.tabs{
-  display:flex
-}
-.tab{
-  flex:1;
-  padding:10px;
-  text-align:center;
-  cursor:pointer;
-  background:#222
-}
-.tab.active{
-  background:#c00000
-}
-.playlist{
-  flex:1;
-  overflow-y:auto
-}
-.playlist-item{
-  padding:10px;
-  border-bottom:1px solid #222;
-  cursor:pointer
-}
+.overlay{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,.35);cursor:pointer}
+.overlay.hidden{background:transparent}
+.play-btn{width:70px;height:70px;background:#c00000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px}
+.sidebar{flex:1;background:#111;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.sidebar h3{margin:0;padding:12px;background:#c00000;font-size:16px}
+.playlist{flex:1;overflow-y:auto}
+.playlist-item{padding:10px;border-bottom:1px solid #222;cursor:pointer}
 .playlist-item:hover{background:#1a1a1a}
-
-/* ADMIN */
-.admin-panel{
-  display:none;
-  padding:10px;
-  border-top:1px solid #222
-}
-.admin-panel input,
-.admin-panel select,
-.admin-panel button{
-  width:100%;
-  margin-top:6px;
-  padding:8px
-}
-
-/* MOBILE */
-@media(max-width:768px){
-  .theater{flex-direction:column}
-}
+.playlist-item.active{background:#c00000}
+.wa-box{padding:12px;text-align:center;border-top:1px solid #222}
+.wa-btn{display:inline-block;margin-top:8px;padding:10px 16px;background:#25D366;color:#000;text-decoration:none;font-weight:bold;border-radius:6px}
+footer{text-align:center;color:#777;font-size:12px;margin:20px 0}
+#adminPanel{display:none;background:#222;padding:10px;margin-top:10px;border-radius:6px;max-height:300px;overflow-y:auto}
+#adminPanel input,#adminPanel select,#adminPanel button{margin:4px 0;padding:6px;width:100%}
+button.delete-btn{background:#c00000;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer}
+@media(max-width:768px){.theater{flex-direction:column}.sidebar{order:2}.video-wrapper{border-radius:0}}
 </style>
 </head>
-
 <body>
-<header>
-  <img src="logo.png">
+<header id="logoHeader">
+  <img src="logo.png" id="logoImg">
   <h2>JKT48 Replay Theater</h2>
 </header>
 
 <div class="container">
-  <div class="theater">
+  <div class="status">
+    <span class="badge">REPLAY</span>
+    <p>Arsip Pertunjukan Theater</p>
+  </div>
 
+  <div class="theater">
     <div class="video-wrapper">
       <div id="player"></div>
+      <div class="overlay" id="overlay">
+        <div class="play-btn" id="playIcon">▶</div>
+      </div>
     </div>
 
     <div class="sidebar">
+      <h3>Normal Playlist</h3>
+      <div class="playlist" id="playlist-normal"></div>
 
-      <div class="tabs">
-        <div class="tab active" onclick="switchTab('normal')">Replay</div>
-        <div class="tab" onclick="switchTab('birthday')">Ultah</div>
+      <h3>Ultah Member</h3>
+      <div class="playlist" id="playlist-ultah"></div>
+
+      <div class="wa-box">
+        <p>Update Replay</p>
+        <a class="wa-btn" target="_blank" href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">
+          Follow WhatsApp Channel
+        </a>
       </div>
 
-      <div class="playlist" id="playlist"></div>
-
-      <div class="admin-panel" id="adminPanel">
+      <!-- Admin panel -->
+      <div id="adminPanel">
+        <h4>Admin Panel</h4>
+        <input type="text" id="title" placeholder="Judul Video">
+        <input type="text" id="videoId" placeholder="Video ID YouTube">
         <select id="category">
-          <option value="normal">Replay</option>
-          <option value="birthday">Ultah</option>
+          <option value="normal">Normal</option>
+          <option value="ultah">Ultah</option>
         </select>
-        <input id="titleInput" placeholder="Judul Replay">
-        <input id="videoInput" placeholder="YouTube Video ID">
-        <button onclick="addPlaylist()">Tambah</button>
+        <input type="number" id="order" placeholder="Urutan (order)">
+        <button id="addBtn">Add Playlist</button>
+        <div id="playlistContainer"></div>
       </div>
-
     </div>
-
   </div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
+<footer>© 2025 ReplayShow JKT48</footer>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore, collection, addDoc,
-  deleteDoc, doc, onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 
-/* CONFIG */
-const ADMIN_KEY="WOTSSUPPLY_48";
-const firebaseConfig={
-  apiKey: "AIzaSyB0duPBEMm2V1lVxNKPZLZ6B5Jd4lANhh8",
-  authDomain: "jkt48-replay.firebaseapp.com",
-  projectId: "jkt48-replay"
+// ===== Firebase Config =====
+const firebaseConfig = {
+  apiKey: "APIKEY_MU",
+  authDomain: "PROJECTID.firebaseapp.com",
+  projectId: "PROJECTID",
+  storageBucket: "PROJECTID.appspot.com",
+  messagingSenderId: "SENDERID",
+  appId: "APPID"
 };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+// ===== Elements =====
+const normalList = document.getElementById("playlist-normal");
+const ultahList  = document.getElementById("playlist-ultah");
+const player     = document.getElementById("player");
+const overlay    = document.getElementById("overlay");
+const playIcon   = document.getElementById("playIcon");
+const adminPanel = document.getElementById("adminPanel");
+const playlistContainer = document.getElementById("playlistContainer");
 
-let MODE="normal";
-let player;
+let ytPlayer;
+let isPlaying = false;
+let currentVideoId = "";
 
-/* ADMIN CHECK */
-if(location.hash==="#admin="+ADMIN_KEY){
-  adminPanel.style.display="block";
+// ===== YouTube API =====
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player("player", {
+    height:"100%", width:"100%", videoId:"",
+    playerVars:{controls:0,rel:0,modestbranding:1},
+    events:{onStateChange:onState}
+  });
 }
+function onState(event){
+  if(event.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
+  else{isPlaying=false; overlay.classList.remove("hidden"); playIcon.textContent="▶";}
+}
+overlay.onclick=()=>{if(ytPlayer) isPlaying?ytPlayer.pauseVideo():ytPlayer.playVideo();};
 
-/* PLAYER */
-window.onYouTubeIframeAPIReady=()=>{
-  player=new YT.Player("player",{playerVars:{controls:0,rel:0}});
-};
-
-/* REALTIME LIST */
-const list=document.getElementById("playlist");
-
-onSnapshot(collection(db,"playlists"),snap=>{
-  list.innerHTML="";
-  snap.forEach(d=>{
-    const data=d.data();
-    if(data.category!==MODE) return;
-
+// ===== Render Playlist =====
+function renderPlaylist(listEl, videos){
+  listEl.innerHTML="";
+  videos.forEach((v,i)=>{
     const div=document.createElement("div");
-    div.className="playlist-item";
-    div.textContent=data.title;
-    div.onclick=()=>player.loadVideoById(data.videoId);
-
-    if(isAdmin()){
-      const del=document.createElement("span");
-      del.textContent=" ✕";
-      del.style.color="red";
-      del.onclick=(e)=>{
-        e.stopPropagation();
-        deleteDoc(doc(db,"playlists",d.id));
-      };
-      div.appendChild(del);
-    }
-    list.appendChild(div);
+    div.className="playlist-item"; div.textContent=v.title;
+    div.onclick=()=>{
+      currentVideoId=v.videoId;
+      ytPlayer.loadVideoById(currentVideoId);
+      document.querySelectorAll(".playlist-item").forEach(el=>el.classList.remove("active"));
+      div.classList.add("active");
+    };
+    listEl.appendChild(div);
   });
-});
-
-/* FUNCTIONS */
-function isAdmin(){
-  return location.hash==="#admin="+ADMIN_KEY;
 }
-window.switchTab=(m)=>{
-  MODE=m;
-  document.querySelectorAll(".tab")
-    .forEach(t=>t.classList.remove("active"));
-  event.target.classList.add("active");
-};
-window.addPlaylist=async()=>{
-  if(!titleInput.value||!videoInput.value) return;
-  await addDoc(collection(db,"playlists"),{
-    title:titleInput.value,
-    videoId:videoInput.value,
-    category:category.value,
-    createdAt:Date.now()
+
+// ===== Firestore Realtime =====
+function setupPlaylist(category,listEl){
+  const q=query(collection(db,"playlists"),where("category","==",category),orderBy("order","asc"));
+  onSnapshot(q,snapshot=>{
+    const videos=snapshot.docs.map(doc=>doc.data());
+    renderPlaylist(listEl,videos);
+    if(!ytPlayer || !currentVideoId){
+      if(videos.length>0){currentVideoId=videos[0].videoId; ytPlayer.loadVideoById(currentVideoId); listEl.children[0].classList.add("active");}
+    }
   });
-  titleInput.value="";
-  videoInput.value="";
+}
+
+// ===== Admin login tap logo 5 detik =====
+const ADMIN_PASSWORD = "123456"; // ganti sesuai lo
+let pressTimer;
+const logoHeader = document.getElementById("logoHeader");
+logoHeader.addEventListener("touchstart",()=>{pressTimer=setTimeout(()=>{showAdminLogin();},5000);});
+logoHeader.addEventListener("touchend",()=>{clearTimeout(pressTimer);});
+logoHeader.addEventListener("mousedown",()=>{pressTimer=setTimeout(()=>{showAdminLogin();},2000);});
+logoHeader.addEventListener("mouseup",()=>{clearTimeout(pressTimer);});
+
+function showAdminLogin(){
+  const pwd=prompt("Admin Password:");
+  if(pwd===ADMIN_PASSWORD){adminPanel.style.display="block"; loadAdminPlaylist();}
+  else alert("Password salah");
+}
+
+// ===== Admin Add Playlist =====
+document.getElementById("addBtn").onclick=async()=>{
+  const title=document.getElementById("title").value;
+  const videoId=document.getElementById("videoId").value;
+  const category=document.getElementById("category").value;
+  const order=parseInt(document.getElementById("order").value);
+  if(!title||!videoId||!category||!order)return alert("Isi semua field");
+  await addDoc(collection(db,"playlists"),{title,videoId,category,order,createdAt:new Date()});
+  document.getElementById("title").value=""; document.getElementById("videoId").value=""; document.getElementById("order").value="";
 };
+
+// ===== Admin realtime playlist load =====
+function loadAdminPlaylist(){
+  const q=query(collection(db,"playlists"),orderBy("order","asc"));
+  onSnapshot(q,snapshot=>{
+    playlistContainer.innerHTML="";
+    snapshot.docs.forEach(docSnap=>{
+      const data=docSnap.data();
+      const div=document.createElement("div");
+      div.className="playlist-item";
+      div.innerHTML=`<span>${data.title} [${data.category}] (order:${data.order})</span>`;
+      const delBtn=document.createElement("button");
+      delBtn.textContent="Delete"; delBtn.className="delete-btn";
+      delBtn.onclick=async()=>{if(confirm("Yakin hapus?")) await deleteDoc(doc(db,"playlists",docSnap.id));};
+      div.appendChild(delBtn);
+      playlistContainer.appendChild(div);
+    });
+  });
+}
+
+// ===== Init =====
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+setupPlaylist("normal",normalList);
+setupPlaylist("ultah",ultahList);
 </script>
-</body>
-</html>
+<script src="https://www.youtube.com/iframe_api"></script>
