@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JKT48 Replay Theater</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0b0b;
+  color:#fff
+}
+header{
+  background:#111;
+  padding:12px;
+  text-align:center;
+  border-bottom:2px solid #c00000
+}
+header img{height:42px}
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:15px
+}
+.status{text-align:center;margin-bottom:15px}
+.badge{
+  padding:6px 14px;
+  border-radius:6px;
+  background:#444;
+  font-weight:bold
+}
+.theater{
+  display:flex;
+  gap:15px
+}
+
+/* VIDEO */
+.video-wrapper{
+  flex:2;
+  aspect-ratio:16/9;
+  background:#000;
+  border-radius:10px;
+  overflow:hidden;
+  position:relative
+}
+#player{width:100%;height:100%}
+.overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,.35);
+  cursor:pointer
+}
+.overlay.hidden{background:transparent}
+.play-btn{
+  width:70px;
+  height:70px;
+  background:#c00000;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px
+}
+
+/* SIDEBAR */
+.sidebar{
+  flex:1;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column
+}
+.sidebar h3{
+  margin:0;
+  padding:12px;
+  background:#c00000;
+  font-size:16px
+}
+.playlist{
+  flex:1;
+  overflow-y:auto
+}
+.playlist-item{
+  padding:10px;
+  border-bottom:1px solid #222;
+  cursor:pointer
+}
+.playlist-item:hover{background:#1a1a1a}
+.playlist-item.active{
+  background:#c00000
+}
+
+/* WA */
+.wa-box{
+  padding:12px;
+  text-align:center;
+  border-top:1px solid #222
+}
+.wa-btn{
+  display:inline-block;
+  margin-top:8px;
+  padding:10px 16px;
+  background:#25D366;
+  color:#000;
+  text-decoration:none;
+  font-weight:bold;
+  border-radius:6px
+}
+
+footer{
+  text-align:center;
+  color:#777;
+  font-size:12px;
+  margin:20px 0
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .theater{flex-direction:column}
+  .sidebar{order:2}
+  .video-wrapper{border-radius:0}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="logo.png">
+  <h2>JKT48 Replay Theater</h2>
+</header>
+
+<div class="container">
+
+  <div class="status">
+    <span class="badge">REPLAY</span>
+    <p>Arsip Pertunjukan Theater</p>
+  </div>
+
+  <div class="theater">
+
+    <div class="video-wrapper">
+      <div id="player"></div>
+      <div class="overlay" id="overlay">
+        <div class="play-btn" id="playIcon">▶</div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <h3>Playlist Replay</h3>
+      <div class="playlist" id="playlist"></div>
+
+      <div class="wa-box">
+        <p>Update Replay</p>
+        <a class="wa-btn" target="_blank"
+           href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">
+           Follow WhatsApp Channel
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© 2025 ReplayShow JKT48</footer>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* ======================
+   PLAYLIST REPLAY
+   ====================== */
+const PLAYLIST = [
+  {
+    section: "Live Theater Biasa",
+    videos: [
+      { title: "Aturan Anti Cinta", id: "VIDEO_ID_1" },
+      { title: "Pajama Drive", id: "VIDEO_ID_2" }
+    ]
+  },
+  {
+    section: "Birthday Live Member",
+    videos: [
+      { title: "Birthday Oniel", id: "VIDEO_ID_3" },
+      { title: "Birthday Zee", id: "VIDEO_ID_4" }
+    ]
+  }
+];
+
+let player;
+let isPlaying = false;
+
+/* RENDER PLAYLIST */
+const list = document.getElementById("playlist");
+let firstVideo = null;
+
+PLAYLIST.forEach(group => {
+  const header = document.createElement("div");
+  header.style.padding = "10px";
+  header.style.fontWeight = "bold";
+  header.style.background = "#151515";
+  header.textContent = group.section;
+  list.appendChild(header);
+
+  group.videos.forEach(video => {
+    if(!firstVideo) firstVideo = video.id;
+
+    const item = document.createElement("div");
+    item.className = "playlist-item";
+    item.textContent = video.title;
+    item.onclick = () => loadVideo(video.id, item);
+    list.appendChild(item);
+  });
+});
+
+function onYouTubeIframeAPIReady(){
+  player = new YT.Player("player",{
+    videoId: firstVideo,
+    playerVars:{controls:0,rel:0,modestbranding:1},
+    events:{onStateChange:onState}
+  });
+}
+
+function loadVideo(videoId, el){
+  player.loadVideoById(videoId);
+  document.querySelectorAll(".playlist-item")
+    .forEach(i=>i.classList.remove("active"));
+  el.classList.add("active");
+}
+
+function onState(e){
+  if(e.data===YT.PlayerState.PLAYING){
+    isPlaying=true;
+    overlay.classList.add("hidden");
+    playIcon.textContent="⏸";
+  }else{
+    isPlaying=false;
+    overlay.classList.remove("hidden");
+    playIcon.textContent="▶";
+  }
+}
+
+overlay.onclick=()=>{
+  if(!player) return;
+  isPlaying ? player.pauseVideo() : player.playVideo();
+};
+</script>
+
+</body>
+</html>
