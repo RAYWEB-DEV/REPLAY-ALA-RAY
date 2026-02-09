@@ -6,7 +6,7 @@
 <title>JKT48 Replay Theater</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#0b0b0b;color:#fff}
-header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000}
+header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000;cursor:pointer}
 header img{height:42px}
 .container{max-width:1200px;margin:auto;padding:15px}
 .status{text-align:center;margin-bottom:15px}
@@ -83,12 +83,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.15.0/fireba
 import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.15.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB0duPBEMm2V1lVxNKPZLZ6B5Jd4lANhh8",
-  authDomain: "jkt48-replay.firebaseapp.com",
-  projectId: "jkt48-replay",
-  storageBucket: "jkt48-replay.firebasestorage.app",
-  messagingSenderId: "994294875316",
-  appId: "1:994294875316:web:902274d9d76fae522683e1"
+  apiKey: "APIKEY_MU",
+  authDomain: "PROJECTID.firebaseapp.com",
+  projectId: "PROJECTID",
+  storageBucket: "PROJECTID.appspot.com",
+  messagingSenderId: "SENDERID",
+  appId: "APPID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -100,17 +100,29 @@ let isPlaying=false;
 const playlistDiv=document.getElementById("playlist");
 const overlay=document.getElementById("overlay");
 const playIcon=document.getElementById("playIcon");
-
 const adminPanel=document.getElementById("adminPanel");
 const playlistContainer=document.getElementById("playlistContainer");
 const addBtn=document.getElementById("addBtn");
-const ADMIN_PASSWORD="123456"; // ganti sesuai lo
+
+const ADMIN_PASSWORD = "12345"; // ganti sesuai lo
 
 // ==== YouTube Player ====
 const PLAYLIST=[];
 function onYouTubeIframeAPIReady(){
   player=new YT.Player("player",{videoId:"",playerVars:{controls:0,rel:0,modestbranding:1},events:{onStateChange:onState}});
 }
+
+function loadVideo(i){
+  currentIndex=i;
+  player.loadVideoById(PLAYLIST[i].videoId);
+  document.querySelectorAll(".playlist-item").forEach((el,idx)=>{el.classList.toggle("active",idx===i);});
+}
+
+function onState(e){
+  if(e.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
+  else{isPlaying=false; overlay.classList.remove("hidden"); playIcon.textContent="▶";}
+}
+overlay.onclick=()=>{if(!player) return; isPlaying ? player.pauseVideo() : player.playVideo();}
 
 // ==== Load Playlist Realtime ====
 const q=query(collection(db,"playlists"),orderBy("order","asc"));
@@ -130,24 +142,28 @@ onSnapshot(q,snapshot=>{
   loadAdminPlaylist();
 });
 
-function loadVideo(i){
-  currentIndex=i;
-  player.loadVideoById(PLAYLIST[i].videoId);
-  document.querySelectorAll(".playlist-item").forEach((el,idx)=>{el.classList.toggle("active",idx===i);});
-}
-
-function onState(e){
-  if(e.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
-  else{isPlaying=false; overlay.classList.remove("hidden"); playIcon.textContent="▶";}
-}
-overlay.onclick=()=>{if(!player) return; isPlaying ? player.pauseVideo() : player.playVideo();}
-
 // ==== Admin Panel Trigger ====
-let logoTapCount=0;
-document.querySelector("header img").onclick=()=>{
+// Tap logo 5x (HP) atau Ctrl+Shift+A (PC)
+let logoTapCount = 0;
+document.querySelector("header img").onclick = () => {
   logoTapCount++;
-  if(logoTapCount>=5){ adminPanel.style.display=adminPanel.style.display==="none"?"block":"none"; logoTapCount=0; }
-}
+  if (logoTapCount >= 5) {
+    logoTapCount = 0;
+    const input = prompt("Masukkan password admin:");
+    if(input===ADMIN_PASSWORD){
+      adminPanel.style.display = adminPanel.style.display==="none"?"block":"none";
+    } else alert("Password salah!");
+  }
+};
+
+document.addEventListener("keydown", e=>{
+  if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==="a"){
+    const input = prompt("Masukkan password admin:");
+    if(input===ADMIN_PASSWORD){
+      adminPanel.style.display = adminPanel.style.display==="none"?"block":"none";
+    } else alert("Password salah!");
+  }
+});
 
 // ==== Admin Functions ====
 addBtn.onclick=async()=>{
