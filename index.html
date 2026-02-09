@@ -6,7 +6,7 @@
 <title>JKT48 Replay Theater</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#0b0b0b;color:#fff}
-header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000;position:relative;user-select:none}
+header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000}
 header img{height:42px}
 .container{max-width:1200px;margin:auto;padding:15px}
 .status{text-align:center;margin-bottom:15px}
@@ -26,16 +26,16 @@ header img{height:42px}
 .wa-box{padding:12px;text-align:center;border-top:1px solid #222}
 .wa-btn{display:inline-block;margin-top:8px;padding:10px 16px;background:#25D366;color:#000;text-decoration:none;font-weight:bold;border-radius:6px}
 footer{text-align:center;color:#777;font-size:12px;margin:20px 0}
-#adminPanel{display:none;background:#222;padding:10px;margin-top:10px;border-radius:6px;max-height:300px;overflow-y:auto}
-#adminPanel input,#adminPanel select,#adminPanel button{margin:4px 0;padding:6px;width:100%}
-button.delete-btn{background:#c00000;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer}
+.admin-panel{display:none;background:#222;padding:10px;margin-top:10px;border-radius:8px;max-height:400px;overflow-y:auto}
+.admin-panel input, .admin-panel select{margin:5px 0;padding:6px;width:100%;border-radius:4px;border:none}
+.admin-panel button{margin:5px 0;padding:6px 10px;border:none;border-radius:4px;background:#c00000;color:#fff;font-weight:bold;cursor:pointer}
 @media(max-width:768px){.theater{flex-direction:column}.sidebar{order:2}.video-wrapper{border-radius:0}}
 </style>
 </head>
 <body>
-<header id="logoHeader">
-  <img src="logo.png" id="logoImg">
-  <h2>JKT48 Replay Theater</h2>
+<header>
+<img src="logo.png">
+<h2>JKT48 Replay Theater</h2>
 </header>
 
 <div class="container">
@@ -53,29 +53,21 @@ button.delete-btn{background:#c00000;color:#fff;border:none;padding:4px 8px;bord
     </div>
 
     <div class="sidebar">
-      <h3>Normal Playlist</h3>
-      <div class="playlist" id="playlist-normal"></div>
-
-      <h3>Ultah Member</h3>
-      <div class="playlist" id="playlist-ultah"></div>
+      <h3>Playlist Replay</h3>
+      <div class="playlist" id="playlist"></div>
 
       <div class="wa-box">
         <p>Update Replay</p>
-        <a class="wa-btn" target="_blank" href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">
-          Follow WhatsApp Channel
-        </a>
+        <a class="wa-btn" target="_blank" href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">Follow WhatsApp Channel</a>
       </div>
 
-      <!-- Admin panel -->
-      <div id="adminPanel">
+      <div class="admin-panel" id="adminPanel">
         <h4>Admin Panel</h4>
         <input type="text" id="title" placeholder="Judul Video">
         <input type="text" id="videoId" placeholder="Video ID YouTube">
-        <select id="category">
-          <option value="normal">Normal</option>
-          <option value="ultah">Ultah</option>
-        </select>
-        <input type="number" id="order" placeholder="Urutan (order)">
+        <select id="category"><option value="normal">Normal</option><option value="ultah">Ultah</option></select>
+        <input type="number" id="order" placeholder="Urutan">
+        <input type="datetime-local" id="createdAt" placeholder="Created At">
         <button id="addBtn">Add Playlist</button>
         <div id="playlistContainer"></div>
       </div>
@@ -85,125 +77,131 @@ button.delete-btn{background:#c00000;color:#fff;border:none;padding:4px 8px;bord
 
 <footer>© 2025 ReplayShow JKT48</footer>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.15.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.15.0/firebase-firestore.js";
 
-// ===== Firebase Config =====
 const firebaseConfig = {
-  apiKey: "AIzaSyB0duPBEMm2V1lVxNKPZLZ6B5Jd4lANhh8",
-  authDomain: "jkt48-replay.firebaseapp.com",
-  projectId: "jkt48-replay",
-  storageBucket: "jkt48-replay.firebasestorage.app",
-  messagingSenderId: "994294875316",
-  appId: "1:994294875316:web:902274d9d76fae522683e1"
+  apiKey: "APIKEY_MU",
+  authDomain: "PROJECTID.firebaseapp.com",
+  projectId: "PROJECTID",
+  storageBucket: "PROJECTID.appspot.com",
+  messagingSenderId: "SENDERID",
+  appId: "APPID"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ===== Elements =====
-const normalList = document.getElementById("playlist-normal");
-const ultahList  = document.getElementById("playlist-ultah");
-const player     = document.getElementById("player");
-const overlay    = document.getElementById("overlay");
-const playIcon   = document.getElementById("playIcon");
-const adminPanel = document.getElementById("adminPanel");
-const playlistContainer = document.getElementById("playlistContainer");
+let player;
+let currentIndex=0;
+let isPlaying=false;
+const playlistDiv=document.getElementById("playlist");
+const overlay=document.getElementById("overlay");
+const playIcon=document.getElementById("playIcon");
 
-let ytPlayer;
-let isPlaying = false;
-let currentVideoId = "";
+const adminPanel=document.getElementById("adminPanel");
+const playlistContainer=document.getElementById("playlistContainer");
+const addBtn=document.getElementById("addBtn");
+const ADMIN_PASSWORD="12345"; // ganti sesuai lo
 
-// ===== YouTube API =====
-function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player("player", {
-    height:"100%", width:"100%", videoId:"",
-    playerVars:{controls:0,rel:0,modestbranding:1},
-    events:{onStateChange:onState}
-  });
+// ==== YouTube Player ====
+const PLAYLIST=[];
+function onYouTubeIframeAPIReady(){
+  player=new YT.Player("player",{videoId:"",playerVars:{controls:0,rel:0,modestbranding:1},events:{onStateChange:onState}});
 }
-function onState(event){
-  if(event.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
+
+// ==== Load Playlist Realtime ====
+const q=query(collection(db,"playlists"),orderBy("order","asc"));
+onSnapshot(q,snapshot=>{
+  playlistDiv.innerHTML="";
+  PLAYLIST.length=0;
+  snapshot.docs.forEach((docSnap,i)=>{
+    const data=docSnap.data();
+    PLAYLIST.push({title:data.title,videoId:data.videoId,category:data.category,id:docSnap.id});
+    const div=document.createElement("div");
+    div.className="playlist-item";
+    div.textContent=data.title;
+    div.onclick=()=>loadVideo(i);
+    playlistDiv.appendChild(div);
+  });
+  if(PLAYLIST.length && (!player || !player.getVideoData().video_id)) loadVideo(0);
+  loadAdminPlaylist();
+});
+
+function loadVideo(i){
+  currentIndex=i;
+  player.loadVideoById(PLAYLIST[i].videoId);
+  document.querySelectorAll(".playlist-item").forEach((el,idx)=>{el.classList.toggle("active",idx===i);});
+}
+
+function onState(e){
+  if(e.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
   else{isPlaying=false; overlay.classList.remove("hidden"); playIcon.textContent="▶";}
 }
-overlay.onclick=()=>{if(ytPlayer) isPlaying?ytPlayer.pauseVideo():ytPlayer.playVideo();};
+overlay.onclick=()=>{if(!player) return; isPlaying ? player.pauseVideo() : player.playVideo();}
 
-// ===== Render Playlist =====
-function renderPlaylist(listEl, videos){
-  listEl.innerHTML="";
-  videos.forEach((v,i)=>{
-    const div=document.createElement("div");
-    div.className="playlist-item"; div.textContent=v.title;
-    div.onclick=()=>{
-      currentVideoId=v.videoId;
-      ytPlayer.loadVideoById(currentVideoId);
-      document.querySelectorAll(".playlist-item").forEach(el=>el.classList.remove("active"));
-      div.classList.add("active");
-    };
-    listEl.appendChild(div);
-  });
+// ==== Admin Panel Trigger ====
+let logoTapCount=0;
+document.querySelector("header img").onclick=()=>{
+  logoTapCount++;
+  if(logoTapCount>=5){ adminPanel.style.display=adminPanel.style.display==="none"?"block":"none"; logoTapCount=0; }
 }
 
-// ===== Firestore Realtime =====
-function setupPlaylist(category,listEl){
-  const q=query(collection(db,"playlists"),where("category","==",category),orderBy("order","asc"));
-  onSnapshot(q,snapshot=>{
-    const videos=snapshot.docs.map(doc=>doc.data());
-    renderPlaylist(listEl,videos);
-    if(!ytPlayer || !currentVideoId){
-      if(videos.length>0){currentVideoId=videos[0].videoId; ytPlayer.loadVideoById(currentVideoId); listEl.children[0].classList.add("active");}
-    }
-  });
-}
-
-// ===== Admin login tap logo 5 detik =====
-const ADMIN_PASSWORD = "123456"; // ganti sesuai lo
-let pressTimer;
-const logoHeader = document.getElementById("logoHeader");
-logoHeader.addEventListener("touchstart",()=>{pressTimer=setTimeout(()=>{showAdminLogin();},5000);});
-logoHeader.addEventListener("touchend",()=>{clearTimeout(pressTimer);});
-logoHeader.addEventListener("mousedown",()=>{pressTimer=setTimeout(()=>{showAdminLogin();},2000);});
-logoHeader.addEventListener("mouseup",()=>{clearTimeout(pressTimer);});
-
-function showAdminLogin(){
-  const pwd=prompt("Admin Password:");
-  if(pwd===ADMIN_PASSWORD){adminPanel.style.display="block"; loadAdminPlaylist();}
-  else alert("Password salah");
-}
-
-// ===== Admin Add Playlist =====
-document.getElementById("addBtn").onclick=async()=>{
+// ==== Admin Functions ====
+addBtn.onclick=async()=>{
   const title=document.getElementById("title").value;
   const videoId=document.getElementById("videoId").value;
   const category=document.getElementById("category").value;
   const order=parseInt(document.getElementById("order").value);
-  if(!title||!videoId||!category||!order)return alert("Isi semua field");
-  await addDoc(collection(db,"playlists"),{title,videoId,category,order,createdAt:new Date()});
-  document.getElementById("title").value=""; document.getElementById("videoId").value=""; document.getElementById("order").value="";
-};
+  const createdAtInput=document.getElementById("createdAt").value;
+  const createdAt=createdAtInput?new Date(createdAtInput):serverTimestamp();
+  if(!title||!videoId||!category||isNaN(order)){alert("Lengkapi semua field");return;}
+  await addDoc(collection(db,"playlists"),{title,videoId,category,order,createdAt});
+  alert("Playlist added!");
+  document.getElementById("title").value="";
+  document.getElementById("videoId").value="";
+  document.getElementById("order").value="";
+  document.getElementById("createdAt").value="";
+}
 
-// ===== Admin realtime playlist load =====
+// ==== Load Admin Playlist Realtime ====
 function loadAdminPlaylist(){
-  const q=query(collection(db,"playlists"),orderBy("order","asc"));
-  onSnapshot(q,snapshot=>{
+  onSnapshot(query(collection(db,"playlists"),orderBy("order","asc")),snapshot=>{
     playlistContainer.innerHTML="";
     snapshot.docs.forEach(docSnap=>{
       const data=docSnap.data();
       const div=document.createElement("div");
       div.className="playlist-item";
-      div.innerHTML=`<span>${data.title} [${data.category}] (order:${data.order})</span>`;
-      const delBtn=document.createElement("button");
-      delBtn.textContent="Delete"; delBtn.className="delete-btn";
-      delBtn.onclick=async()=>{if(confirm("Yakin hapus?")) await deleteDoc(doc(db,"playlists",docSnap.id));};
-      div.appendChild(delBtn);
+      div.innerHTML=`
+        <input type="text" value="${data.title}" class="edit-title">
+        <input type="text" value="${data.videoId}" class="edit-videoId">
+        <select class="edit-category">
+          <option value="normal" ${data.category==="normal"?"selected":""}>Normal</option>
+          <option value="ultah" ${data.category==="ultah"?"selected":""}>Ultah</option>
+        </select>
+        <input type="number" value="${data.order}" class="edit-order">
+        <input type="datetime-local" value="${new Date(data.createdAt.seconds*1000).toISOString().slice(0,16)}" class="edit-createdAt">
+        <button class="save-btn">Save</button>
+        <button class="delete-btn">Delete</button>
+      `;
+      div.querySelector(".save-btn").onclick=async()=>{
+        const title=div.querySelector(".edit-title").value;
+        const videoId=div.querySelector(".edit-videoId").value;
+        const category=div.querySelector(".edit-category").value;
+        const order=parseInt(div.querySelector(".edit-order").value);
+        const createdAtVal=new Date(div.querySelector(".edit-createdAt").value);
+        await updateDoc(doc(db,"playlists",docSnap.id),{title,videoId,category,order,createdAt:createdAtVal});
+        alert("Playlist updated!");
+      };
+      div.querySelector(".delete-btn").onclick=async()=>{
+        if(confirm("Yakin hapus?")) await deleteDoc(doc(db,"playlists",docSnap.id));
+      };
       playlistContainer.appendChild(div);
     });
   });
 }
-
-// ===== Init =====
-window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-setupPlaylist("normal",normalList);
-setupPlaylist("ultah",ultahList);
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
