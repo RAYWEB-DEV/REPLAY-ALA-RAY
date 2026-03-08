@@ -1,191 +1,38 @@
 <!DOCTYPE html>
-
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JKT48 Replay Theater</title>
-
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#0b0b0b;
-color:#fff
-}
-
-header{
-background:#111;
-padding:12px;
-text-align:center;
-border-bottom:2px solid #c00000
-}
-
-header img{
-height:42px;
-cursor:pointer
-}
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:15px
-}
-
-.theater{
-display:flex;
-gap:15px
-}
-
-.video-wrapper{
-flex:2;
-aspect-ratio:16/9;
-background:#000;
-border-radius:10px;
-overflow:hidden;
-position:relative
-}
-
-#player{
-width:100%;
-height:100%
-}
-
-.overlay{
-position:absolute;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-background:rgba(0,0,0,.35);
-cursor:pointer
-}
-
-.play-btn{
-width:70px;
-height:70px;
-background:#c00000;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:30px
-}
-
-.action-buttons{
-display:flex;
-gap:10px;
-margin-top:10px
-}
-
-#shareBtn{
-flex:1;
-padding:10px;
-border:none;
-border-radius:6px;
-background:#555;
-color:#fff;
-font-weight:bold;
-cursor:pointer
-}
-
-.yt-display{
-flex:1;
-padding:10px;
-border-radius:6px;
-background:#ff0000;
-color:#fff;
-text-align:center;
-opacity:.6;
-pointer-events:none
-}
-
-.sidebar{
-flex:1;
-background:#111;
-border-radius:10px;
-overflow:hidden;
-display:flex;
-flex-direction:column
-}
-
-.sidebar h3{
-margin:0;
-padding:12px;
-background:#c00000
-}
-
-.playlist{
-flex:1;
-overflow-y:auto
-}
-
-.playlist-item{
-display:flex;
-gap:10px;
-padding:8px;
-border-bottom:1px solid #222;
-cursor:pointer;
-align-items:center
-}
-
-.playlist-item:hover{
-background:#1a1a1a
-}
-
-.thumb img{
-width:90px;
-height:50px;
-object-fit:cover;
-border-radius:4px
-}
-
-.playlist-info{
-font-size:13px
-}
-
-.admin-panel{
-display:none;
-background:#222;
-padding:10px;
-border-top:1px solid #333
-}
-
-.admin-panel input{
-width:100%;
-margin:5px 0;
-padding:6px
-}
-
-.admin-panel button{
-padding:6px 10px;
-background:#c00000;
-color:#fff;
-border:none;
-cursor:pointer;
-margin-top:5px
-}
-
-.admin-playlist{
-margin-top:10px
-}
-
-.admin-item{
-display:flex;
-justify-content:space-between;
-margin:5px 0;
-font-size:12px
-}
-
-.admin-item button{
-background:#444
-}
-
+body{margin:0;font-family:Arial;background:#0b0b0b;color:#fff}
+header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000}
+header img{height:42px;cursor:pointer}
+.container{max-width:1200px;margin:auto;padding:15px}
+.theater{display:flex;gap:15px}
+.video-wrapper{flex:2;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;position:relative}
+#player{width:100%;height:100%}
+.overlay{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,.35);cursor:pointer;z-index:10}
+.play-btn{width:70px;height:70px;background:#c00000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px}
+.action-buttons{display:flex;gap:10px;margin-top:10px}
+#shareBtn{flex:1;padding:10px;border:none;border-radius:6px;background:#555;color:#fff;font-weight:bold;cursor:pointer}
+.yt-display{flex:1;padding:10px;border-radius:6px;background:#ff0000;color:#fff;text-align:center;opacity:.6;pointer-events:none;user-select:none}
+.sidebar{flex:1;background:#111;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.sidebar h3{margin:0;padding:12px;background:#c00000}
+.playlist{flex:1;overflow-y:auto}
+.playlist-item{display:flex;gap:10px;padding:8px;border-bottom:1px solid #222;cursor:pointer;align-items:center}
+.playlist-item:hover{background:#1a1a1a}
+.thumb img{width:90px;height:50px;object-fit:cover;border-radius:4px}
+.playlist-info{font-size:13px}
+.admin-panel{display:none;background:#222;padding:10px;border-top:1px solid #333}
+.admin-panel input{width:100%;margin:5px 0;padding:6px}
+.admin-panel button{padding:6px 10px;background:#c00000;color:#fff;border:none;cursor:pointer;margin-top:5px}
+.admin-playlist{margin-top:10px}
+.admin-item{display:flex;justify-content:space-between;margin:5px 0;font-size:12px}
+.admin-item button{background:#444;color:#fff;border:none;padding:3px 6px;cursor:pointer}
+@media(max-width:768px){.theater{flex-direction:column}}
 </style>
-
 </head>
-
 <body>
 
 <header>
@@ -194,275 +41,156 @@ background:#444
 </header>
 
 <div class="container">
-
 <div class="theater">
-
 <div style="flex:2">
-
 <div class="video-wrapper">
-
 <div id="player"></div>
-
 <div class="overlay" id="overlay">
 <div class="play-btn" id="playIcon">▶</div>
 </div>
-
 </div>
-
 <div class="action-buttons">
-
 <button id="shareBtn">Share Link</button>
-
 <div class="yt-display">Open YouTube</div>
-
 </div>
-
 </div>
 
 <div class="sidebar">
-
 <h3>Playlist Replay</h3>
-
 <div class="playlist" id="playlist"></div>
 
 <div class="admin-panel" id="adminPanel">
-
 <h4>Admin Panel</h4>
-
 <input id="title" placeholder="Judul Video">
 <input id="videoId" placeholder="Video ID YouTube">
-
 <button id="addBtn">Add Playlist</button>
-
 <div class="admin-playlist" id="adminPlaylist"></div>
-
 </div>
 
 </div>
-
 </div>
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-
 <script>
-
-let player
-let currentIndex=0
-let isPlaying=false
-
-const playlistDiv=document.getElementById("playlist")
-const overlay=document.getElementById("overlay")
-const playIcon=document.getElementById("playIcon")
-
+let player,currentIndex=0,isPlaying=false;
 const PLAYLIST=[
+  {title:"Sample Theater 1",videoId:"dQw4w9WgXcQ"},
+  {title:"Sample Theater 2",videoId:"3JZ_D3ELwOQ"}
+];
 
-{title:"Z vs Alpha",videoId:"eTROoSzFpfY"},
-{title:"Sample Theater 2",videoId:"3JZ_D3ELwOQ"}
+const playlistDiv=document.getElementById("playlist");
+const overlay=document.getElementById("overlay");
+const playIcon=document.getElementById("playIcon");
 
-]
-
+// ======= YT Player =======
 function onYouTubeIframeAPIReady(){
-
-player=new YT.Player("player",{
-
-videoId:PLAYLIST[0].videoId,
-
-playerVars:{controls:0,rel:0},
-
-events:{onStateChange:onState}
-
-})
-
-renderPlaylist()
-renderAdmin()
-
+  player=new YT.Player("player",{
+    videoId:PLAYLIST[0].videoId,
+    playerVars:{controls:0,rel:0},
+    events:{onStateChange:onState}
+  });
+  renderPlaylist(); renderAdmin();
 }
 
+// Render playlist
 function renderPlaylist(){
-
-playlistDiv.innerHTML=""
-
-PLAYLIST.forEach((v,i)=>{
-
-const thumb=`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`
-
-const div=document.createElement("div")
-
-div.className="playlist-item"
-
-div.innerHTML=`
-
-<div class="thumb">
-<img src="${thumb}">
-</div>
-
-<div class="playlist-info">
-${v.title}
-</div>
-
-`
-
-div.onclick=()=>loadVideo(i)
-
-playlistDiv.appendChild(div)
-
-})
-
+  playlistDiv.innerHTML="";
+  PLAYLIST.forEach((v,i)=>{
+    const thumb=`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
+    const div=document.createElement("div");
+    div.className="playlist-item";
+    div.innerHTML=`
+      <div class="thumb"><img src="${thumb}"></div>
+      <div class="playlist-info">${v.title}</div>`;
+    div.onclick=()=>loadVideo(i);
+    playlistDiv.appendChild(div);
+  });
 }
 
+// Load video
 function loadVideo(i){
-
-currentIndex=i
-
-player.loadVideoById(PLAYLIST[i].videoId)
-
+  currentIndex=i;
+  player.loadVideoById(PLAYLIST[i].videoId);
 }
 
+// Play / Pause
 function onState(e){
-
-if(e.data===YT.PlayerState.PLAYING){
-
-isPlaying=true
-overlay.style.display="none"
-playIcon.textContent="⏸"
-
-}else{
-
-isPlaying=false
-overlay.style.display="flex"
-playIcon.textContent="▶"
-
+  if(e.data===YT.PlayerState.PLAYING){
+    isPlaying=true; overlay.style.display="none"; playIcon.textContent="⏸";
+  }else{
+    isPlaying=false; overlay.style.display="flex"; playIcon.textContent="▶";
+  }
 }
 
+// Mobile fullscreen
+function enterFullscreen(){
+  const el=document.getElementById("player");
+  if(el.requestFullscreen) el.requestFullscreen();
+  else if(el.webkitEnterFullscreen) el.webkitEnterFullscreen();
 }
 
+// Overlay click
 overlay.onclick=()=>{
-
-if(!player)return
-
-isPlaying ? player.pauseVideo() : player.playVideo()
-
+  if(!player) return;
+  if(!isPlaying){
+    enterFullscreen();
+    player.playVideo();
+  }else player.pauseVideo();
 }
 
+// Share link
 document.getElementById("shareBtn").onclick=()=>{
-
-const url=location.href
-
-if(navigator.share){
-
-navigator.share({
-title:"JKT48 Replay Theater",
-url:url
-})
-
-}else{
-
-navigator.clipboard.writeText(url)
-
-alert("Link berhasil disalin")
-
+  const url=location.href;
+  if(navigator.share) navigator.share({title:"JKT48 Replay Theater",url});
+  else{navigator.clipboard.writeText(url);alert("Link berhasil disalin");}
 }
 
-}
-
-// ===== ADMIN =====
-
-const ADMIN_PASSWORD="Kepo bang"
-const adminPanel=document.getElementById("adminPanel")
-const logoTrigger=document.getElementById("logoTrigger")
-
-let clickCount=0
-let clickTimer
+// ======= ADMIN =======
+const ADMIN_PASSWORD="12345";
+const adminPanel=document.getElementById("adminPanel");
+const logoTrigger=document.getElementById("logoTrigger");
+let clickCount=0,clickTimer;
 
 logoTrigger.onclick=()=>{
-
-clickCount++
-
-clearTimeout(clickTimer)
-
-clickTimer=setTimeout(()=>{
-
-clickCount=0
-
-},2000)
-
-if(clickCount>=5){
-
-const input=prompt("Password Admin")
-
-if(input===ADMIN_PASSWORD){
-
-adminPanel.style.display="block"
-
-}else{
-
-alert("Password salah")
-
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer=setTimeout(()=>{clickCount=0;},2000);
+  if(clickCount>=5){
+    const input=prompt("Password Admin");
+    if(input===ADMIN_PASSWORD) adminPanel.style.display="block";
+    else alert("Password salah");
+    clickCount=0;
+  }
 }
 
-clickCount=0
-
-}
-
-}
-
+// Add playlist
 document.getElementById("addBtn").onclick=()=>{
-
-const title=document.getElementById("title").value
-const videoId=document.getElementById("videoId").value
-
-if(!title || !videoId){
-
-alert("Isi semua field")
-
-return
-
+  const title=document.getElementById("title").value;
+  const videoId=document.getElementById("videoId").value;
+  if(!title||!videoId){alert("Isi semua field"); return;}
+  PLAYLIST.push({title,videoId});
+  renderPlaylist(); renderAdmin();
+  document.getElementById("title").value=""; document.getElementById("videoId").value="";
 }
 
-PLAYLIST.push({title,videoId})
-
-renderPlaylist()
-renderAdmin()
-
-document.getElementById("title").value=""
-document.getElementById("videoId").value=""
-
-}
-
+// Admin render
 function renderAdmin(){
-
-const adminList=document.getElementById("adminPlaylist")
-
-adminList.innerHTML=""
-
-PLAYLIST.forEach((v,i)=>{
-
-const div=document.createElement("div")
-
-div.className="admin-item"
-
-div.innerHTML=`
-<span>${v.title}</span>
-<button onclick="deleteVideo(${i})">Delete</button>
-`
-
-adminList.appendChild(div)
-
-})
-
+  const adminList=document.getElementById("adminPlaylist");
+  adminList.innerHTML="";
+  PLAYLIST.forEach((v,i)=>{
+    const div=document.createElement("div");
+    div.className="admin-item";
+    div.innerHTML=`<span>${v.title}</span><button onclick="deleteVideo(${i})">Delete</button>`;
+    adminList.appendChild(div);
+  });
 }
 
+// Delete playlist
 function deleteVideo(i){
-
-PLAYLIST.splice(i,1)
-
-renderPlaylist()
-renderAdmin()
-
+  PLAYLIST.splice(i,1);
+  renderPlaylist(); renderAdmin();
 }
-
 </script>
-
 </body>
 </html>
