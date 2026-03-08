@@ -1,225 +1,468 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JKT48 Replay Theater</title>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b0b0b;color:#fff}
-header{background:#111;padding:12px;text-align:center;border-bottom:2px solid #c00000}
-header img{height:42px}
-.container{max-width:1200px;margin:auto;padding:15px}
-.status{text-align:center;margin-bottom:15px}
-.badge{padding:6px 14px;border-radius:6px;background:#444;font-weight:bold}
-.theater{display:flex;gap:15px}
-.video-wrapper{flex:2;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;position:relative}
-#player{width:100%;height:100%}
-.overlay{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,.35);cursor:pointer}
-.overlay.hidden{background:transparent}
-.play-btn{width:70px;height:70px;background:#c00000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px}
-.sidebar{flex:1;background:#111;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
-.sidebar h3{margin:0;padding:12px;background:#c00000;font-size:16px}
-.playlist{flex:1;overflow-y:auto}
-.playlist-item{padding:10px;border-bottom:1px solid #222;cursor:pointer}
-.playlist-item:hover{background:#1a1a1a}
-.playlist-item.active{background:#c00000}
-.wa-box{padding:12px;text-align:center;border-top:1px solid #222}
-.wa-btn{display:inline-block;margin-top:8px;padding:10px 16px;background:#25D366;color:#000;text-decoration:none;font-weight:bold;border-radius:6px}
-footer{text-align:center;color:#777;font-size:12px;margin:20px 0}
-.admin-panel{display:none;background:#222;padding:10px;margin-top:10px;border-radius:8px;max-height:400px;overflow-y:auto}
-.admin-panel input, .admin-panel select{margin:5px 0;padding:6px;width:100%;border-radius:4px;border:none}
-.admin-panel button{margin:5px 0;padding:6px 10px;border:none;border-radius:4px;background:#c00000;color:#fff;font-weight:bold;cursor:pointer}
-#secretBtn{position:fixed;bottom:10px;right:10px;width:30px;height:30px;opacity:0;z-index:9999;cursor:pointer}
-@media(max-width:768px){.theater{flex-direction:column}.sidebar{order:2}.video-wrapper{border-radius:0}}
+
+body{
+margin:0;
+font-family:Arial;
+background:#0b0b0b;
+color:#fff
+}
+
+header{
+background:#111;
+padding:12px;
+text-align:center;
+border-bottom:2px solid #c00000
+}
+
+header img{
+height:42px;
+cursor:pointer
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:15px
+}
+
+.theater{
+display:flex;
+gap:15px
+}
+
+.video-wrapper{
+flex:2;
+aspect-ratio:16/9;
+background:#000;
+border-radius:10px;
+overflow:hidden;
+position:relative
+}
+
+#player{
+width:100%;
+height:100%
+}
+
+.overlay{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+background:rgba(0,0,0,.35);
+cursor:pointer
+}
+
+.play-btn{
+width:70px;
+height:70px;
+background:#c00000;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px
+}
+
+.action-buttons{
+display:flex;
+gap:10px;
+margin-top:10px
+}
+
+#shareBtn{
+flex:1;
+padding:10px;
+border:none;
+border-radius:6px;
+background:#555;
+color:#fff;
+font-weight:bold;
+cursor:pointer
+}
+
+.yt-display{
+flex:1;
+padding:10px;
+border-radius:6px;
+background:#ff0000;
+color:#fff;
+text-align:center;
+opacity:.6;
+pointer-events:none
+}
+
+.sidebar{
+flex:1;
+background:#111;
+border-radius:10px;
+overflow:hidden;
+display:flex;
+flex-direction:column
+}
+
+.sidebar h3{
+margin:0;
+padding:12px;
+background:#c00000
+}
+
+.playlist{
+flex:1;
+overflow-y:auto
+}
+
+.playlist-item{
+display:flex;
+gap:10px;
+padding:8px;
+border-bottom:1px solid #222;
+cursor:pointer;
+align-items:center
+}
+
+.playlist-item:hover{
+background:#1a1a1a
+}
+
+.thumb img{
+width:90px;
+height:50px;
+object-fit:cover;
+border-radius:4px
+}
+
+.playlist-info{
+font-size:13px
+}
+
+.admin-panel{
+display:none;
+background:#222;
+padding:10px;
+border-top:1px solid #333
+}
+
+.admin-panel input{
+width:100%;
+margin:5px 0;
+padding:6px
+}
+
+.admin-panel button{
+padding:6px 10px;
+background:#c00000;
+color:#fff;
+border:none;
+cursor:pointer;
+margin-top:5px
+}
+
+.admin-playlist{
+margin-top:10px
+}
+
+.admin-item{
+display:flex;
+justify-content:space-between;
+margin:5px 0;
+font-size:12px
+}
+
+.admin-item button{
+background:#444
+}
+
 </style>
+
 </head>
+
 <body>
+
 <header>
-<img src="logo.png">
+<img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/JKT48_logo.svg" id="logoTrigger">
 <h2>JKT48 Replay Theater</h2>
 </header>
 
 <div class="container">
-  <div class="status">
-    <span class="badge">REPLAY</span>
-    <p>Arsip Pertunjukan Theater</p>
-  </div>
 
-  <div class="theater">
-    <div class="video-wrapper">
-      <div id="player"></div>
-      <div class="overlay" id="overlay">
-        <div class="play-btn" id="playIcon">▶</div>
-      </div>
-    </div>
+<div class="theater">
 
-    <div class="sidebar">
-      <h3>Playlist Replay</h3>
-      <div class="playlist" id="playlist"></div>
+<div style="flex:2">
 
-      <div class="wa-box">
-        <p>Update Replay</p>
-        <a class="wa-btn" target="_blank" href="https://whatsapp.com/channel/ISI_DENGAN_LINK_KAMU">Follow WhatsApp Channel</a>
-      </div>
+<div class="video-wrapper">
 
-      <div class="admin-panel" id="adminPanel">
-        <h4>Admin Panel</h4>
-        <input type="text" id="title" placeholder="Judul Video">
-        <input type="text" id="videoId" placeholder="Video ID YouTube">
-        <select id="category"><option value="normal">Normal</option><option value="ultah">Ultah</option></select>
-        <input type="number" id="order" placeholder="Urutan">
-        <input type="datetime-local" id="createdAt" placeholder="Created At">
-        <button id="addBtn">Add Playlist</button>
-        <div id="playlistContainer"></div>
-      </div>
-    </div>
-  </div>
+<div id="player"></div>
+
+<div class="overlay" id="overlay">
+<div class="play-btn" id="playIcon">▶</div>
 </div>
 
-<footer>© 2025 ReplayShow JKT48</footer>
+</div>
 
-<button id="secretBtn"></button>
+<div class="action-buttons">
+
+<button id="shareBtn">Share Link</button>
+
+<div class="yt-display">Open YouTube</div>
+
+</div>
+
+</div>
+
+<div class="sidebar">
+
+<h3>Playlist Replay</h3>
+
+<div class="playlist" id="playlist"></div>
+
+<div class="admin-panel" id="adminPanel">
+
+<h4>Admin Panel</h4>
+
+<input id="title" placeholder="Judul Video">
+<input id="videoId" placeholder="Video ID YouTube">
+
+<button id="addBtn">Add Playlist</button>
+
+<div class="admin-playlist" id="adminPlaylist"></div>
+
+</div>
+
+</div>
+
+</div>
+</div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.15.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.15.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB0duPBEMm2V1lVxNKPZLZ6B5Jd4lANhh8",
-  authDomain: "jkt48-replay.firebaseapp.com",
-  projectId: "jkt48-replay",
-  storageBucket: "jkt48-replay.firebasestorage.app",
-  messagingSenderId: "994294875316",
-  appId: "1:994294875316:web:902274d9d76fae522683e1"
-};
+<script>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let player
+let currentIndex=0
+let isPlaying=false
 
-let player;
-let currentIndex=0;
-let isPlaying=false;
-const playlistDiv=document.getElementById("playlist");
-const overlay=document.getElementById("overlay");
-const playIcon=document.getElementById("playIcon");
-const adminPanel=document.getElementById("adminPanel");
-const playlistContainer=document.getElementById("playlistContainer");
-const addBtn=document.getElementById("addBtn");
-const secretBtn=document.getElementById("secretBtn");
+const playlistDiv=document.getElementById("playlist")
+const overlay=document.getElementById("overlay")
+const playIcon=document.getElementById("playIcon")
 
-const ADMIN_PASSWORD = "12345"; // ganti sesuai lo
+const PLAYLIST=[
 
-// ==== YouTube Player ====
-const PLAYLIST=[];
+{title:"Sample Theater 1",videoId:"dQw4w9WgXcQ"},
+{title:"Sample Theater 2",videoId:"3JZ_D3ELwOQ"}
+
+]
+
 function onYouTubeIframeAPIReady(){
-  player=new YT.Player("player",{videoId:"",playerVars:{controls:0,rel:0,modestbranding:1},events:{onStateChange:onState}});
+
+player=new YT.Player("player",{
+
+videoId:PLAYLIST[0].videoId,
+
+playerVars:{controls:0,rel:0},
+
+events:{onStateChange:onState}
+
+})
+
+renderPlaylist()
+renderAdmin()
+
+}
+
+function renderPlaylist(){
+
+playlistDiv.innerHTML=""
+
+PLAYLIST.forEach((v,i)=>{
+
+const thumb=`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`
+
+const div=document.createElement("div")
+
+div.className="playlist-item"
+
+div.innerHTML=`
+
+<div class="thumb">
+<img src="${thumb}">
+</div>
+
+<div class="playlist-info">
+${v.title}
+</div>
+
+`
+
+div.onclick=()=>loadVideo(i)
+
+playlistDiv.appendChild(div)
+
+})
+
 }
 
 function loadVideo(i){
-  currentIndex=i;
-  player.loadVideoById(PLAYLIST[i].videoId);
-  document.querySelectorAll(".playlist-item").forEach((el,idx)=>{el.classList.toggle("active",idx===i);});
+
+currentIndex=i
+
+player.loadVideoById(PLAYLIST[i].videoId)
+
 }
 
 function onState(e){
-  if(e.data===YT.PlayerState.PLAYING){isPlaying=true; overlay.classList.add("hidden"); playIcon.textContent="⏸";}
-  else{isPlaying=false; overlay.classList.remove("hidden"); playIcon.textContent="▶";}
-}
-overlay.onclick=()=>{if(!player) return; isPlaying ? player.pauseVideo() : player.playVideo();}
 
-// ==== Admin Panel Trigger via Secret Button ====
-secretBtn.onclick = () => {
-  const input = prompt("Masukkan password admin:");
-  if(input===ADMIN_PASSWORD){
-    adminPanel.style.display = adminPanel.style.display==="none"?"block":"none";
-  } else {
-    alert("Password salah!");
-  }
-};
+if(e.data===YT.PlayerState.PLAYING){
 
-// ==== Admin Panel Trigger via URL Parameter ====
-const urlParams = new URLSearchParams(window.location.search);
-if(urlParams.get("admin") === "true"){
-  const input = prompt("Masukkan password admin:");
-  if(input===ADMIN_PASSWORD){
-    adminPanel.style.display = "block";
-  } else {
-    alert("Password salah!");
-  }
+isPlaying=true
+overlay.style.display="none"
+playIcon.textContent="⏸"
+
+}else{
+
+isPlaying=false
+overlay.style.display="flex"
+playIcon.textContent="▶"
+
 }
 
-// ==== Load Playlist Realtime ====
-const q=query(collection(db,"playlists"),orderBy("order","asc"));
-onSnapshot(q,snapshot=>{
-  playlistDiv.innerHTML="";
-  PLAYLIST.length=0;
-  snapshot.docs.forEach((docSnap,i)=>{
-    const data=docSnap.data();
-    PLAYLIST.push({title:data.title,videoId:data.videoId,category:data.category,id:docSnap.id});
-    const div=document.createElement("div");
-    div.className="playlist-item";
-    div.textContent=data.title;
-    div.onclick=()=>loadVideo(i);
-    playlistDiv.appendChild(div);
-  });
-  if(PLAYLIST.length && (!player || !player.getVideoData().video_id)) loadVideo(0);
-  loadAdminPlaylist();
-});
-
-// ==== Admin Functions ====
-addBtn.onclick=async()=>{
-  const title=document.getElementById("title").value;
-  const videoId=document.getElementById("videoId").value;
-  const category=document.getElementById("category").value;
-  const order=parseInt(document.getElementById("order").value);
-  const createdAtInput=document.getElementById("createdAt").value;
-  const createdAt=createdAtInput?new Date(createdAtInput):serverTimestamp();
-  if(!title||!videoId||!category||isNaN(order)){alert("Lengkapi semua field");return;}
-  await addDoc(collection(db,"playlists"),{title,videoId,category,order,createdAt});
-  alert("Playlist added!");
-  document.getElementById("title").value="";
-  document.getElementById("videoId").value="";
-  document.getElementById("order").value="";
-  document.getElementById("createdAt").value="";
 }
 
-// ==== Load Admin Playlist Realtime ====
-function loadAdminPlaylist(){
-  onSnapshot(query(collection(db,"playlists"),orderBy("order","asc")),snapshot=>{
-    playlistContainer.innerHTML="";
-    snapshot.docs.forEach(docSnap=>{
-      const data=docSnap.data();
-      const div=document.createElement("div");
-      div.className="playlist-item";
-      div.innerHTML=`
-        <input type="text" value="${data.title}" class="edit-title">
-        <input type="text" value="${data.videoId}" class="edit-videoId">
-        <select class="edit-category">
-          <option value="normal" ${data.category==="normal"?"selected":""}>Normal</option>
-          <option value="ultah" ${data.category==="ultah"?"selected":""}>Ultah</option>
-        </select>
-        <input type="number" value="${data.order}" class="edit-order">
-        <input type="datetime-local" value="${new Date(data.createdAt.seconds*1000).toISOString().slice(0,16)}" class="edit-createdAt">
-        <button class="save-btn">Save</button>
-        <button class="delete-btn">Delete</button>
-      `;
-      div.querySelector(".save-btn").onclick=async()=>{
-        const title=div.querySelector(".edit-title").value;
-        const videoId=div.querySelector(".edit-videoId").value;
-        const category=div.querySelector(".edit-category").value;
-        const order=parseInt(div.querySelector(".edit-order").value);
-        const createdAtVal=new Date(div.querySelector(".edit-createdAt").value);
-        await updateDoc(doc(db,"playlists",docSnap.id),{title,videoId,category,order,createdAt:createdAtVal});
-        alert("Playlist updated!");
-      };
-      div.querySelector(".delete-btn").onclick=async()=>{
-        if(confirm("Yakin hapus?")) await deleteDoc(doc(db,"playlists",docSnap.id));
-      };
-      playlistContainer.appendChild(div);
-    });
-  });
+overlay.onclick=()=>{
+
+if(!player)return
+
+isPlaying ? player.pauseVideo() : player.playVideo()
+
 }
+
+document.getElementById("shareBtn").onclick=()=>{
+
+const url=location.href
+
+if(navigator.share){
+
+navigator.share({
+title:"JKT48 Replay Theater",
+url:url
+})
+
+}else{
+
+navigator.clipboard.writeText(url)
+
+alert("Link berhasil disalin")
+
+}
+
+}
+
+// ===== ADMIN =====
+
+const ADMIN_PASSWORD="12345"
+const adminPanel=document.getElementById("adminPanel")
+const logoTrigger=document.getElementById("logoTrigger")
+
+let clickCount=0
+let clickTimer
+
+logoTrigger.onclick=()=>{
+
+clickCount++
+
+clearTimeout(clickTimer)
+
+clickTimer=setTimeout(()=>{
+
+clickCount=0
+
+},2000)
+
+if(clickCount>=5){
+
+const input=prompt("Password Admin")
+
+if(input===ADMIN_PASSWORD){
+
+adminPanel.style.display="block"
+
+}else{
+
+alert("Password salah")
+
+}
+
+clickCount=0
+
+}
+
+}
+
+document.getElementById("addBtn").onclick=()=>{
+
+const title=document.getElementById("title").value
+const videoId=document.getElementById("videoId").value
+
+if(!title || !videoId){
+
+alert("Isi semua field")
+
+return
+
+}
+
+PLAYLIST.push({title,videoId})
+
+renderPlaylist()
+renderAdmin()
+
+document.getElementById("title").value=""
+document.getElementById("videoId").value=""
+
+}
+
+function renderAdmin(){
+
+const adminList=document.getElementById("adminPlaylist")
+
+adminList.innerHTML=""
+
+PLAYLIST.forEach((v,i)=>{
+
+const div=document.createElement("div")
+
+div.className="admin-item"
+
+div.innerHTML=`
+<span>${v.title}</span>
+<button onclick="deleteVideo(${i})">Delete</button>
+`
+
+adminList.appendChild(div)
+
+})
+
+}
+
+function deleteVideo(i){
+
+PLAYLIST.splice(i,1)
+
+renderPlaylist()
+renderAdmin()
+
+}
+
 </script>
+
 </body>
 </html>
